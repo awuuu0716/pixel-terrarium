@@ -1,3 +1,4 @@
 node_modules/
 artifacts/
 *.zip
+dist/version.json
