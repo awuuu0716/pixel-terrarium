@@ -1,3 +1,4 @@
+import { groundDistance, DEPTH_UNIT } from './scene.js';
 export const TYPES = {
   moss: { name: '苔蘚', plant: true, growth: .0028, food: .9 },
   fern: { name: '蕨類', plant: true, growth: .0018, food: 1.1 },
@@ -61,20 +62,20 @@ export function step(w, dt, rng = Math.random) {
     let food = null;
     if (a.energy < 88) {
       let nearest = Infinity;
-      for (const p of w.plants) { if (p.size < .2 || p.health < 15) continue; const d = Math.hypot(p.x-a.x,(p.y-a.y)*2); if (d<nearest) { nearest=d; food=p; } }
+      for (const p of w.plants) { if (p.size < .2 || p.health < 15) continue; const d = groundDistance(p,a); if (d<nearest) { nearest=d; food=p; } }
     }
     if (food) {
       a.targetX = food.x; a.targetY = food.y;
-      if (Math.hypot(a.x-food.x,a.y-food.y)<8) {
+      if (groundDistance(a,food)<8) {
         const portion = Math.min(Math.max(0,food.size-.12),dt*.005);
         food.size -= portion; a.energy = clamp(a.energy+portion*520*TYPES[food.type].food,0,100); a.state='吃點心中';
       } else a.state='尋找點心';
     } else if (a.wander <= 0) { a.targetX=66+rng()*348; a.targetY=207+rng()*29; a.wander=5+rng()*14; a.state=night?'月下散步':'散步中'; }
-    const dx=a.targetX-a.x, dy=a.targetY-a.y, d=Math.hypot(dx,dy);
-    if (d>3 && a.state!=='吃點心中') { const movement=Math.min(d,TYPES[a.type].speed*dt*(rain && a.type==='snail'?1.8:1)*(night?.7:1)); a.x+=dx/d*movement; a.y+=dy/d*movement; a.dir=dx>0?1:-1; }
+    const dx=a.targetX-a.x, dy=(a.targetY-a.y)*DEPTH_UNIT, d=Math.hypot(dx,dy);
+    if (d>3 && a.state!=='吃點心中') { const movement=Math.min(d,TYPES[a.type].speed*dt*(rain && a.type==='snail'?1.8:1)*(night?.7:1)); a.x+=dx/d*movement; a.y+=dy/d*movement/DEPTH_UNIT; if(Math.abs(dx)>.01)a.dir=dx>0?1:-1; }
     else if (!food) a.state=night?'打盹中':'發呆中';
     if (a.energy > 83 && a.breed <= 0 && w.plants.length >= 5 && w.moisture > 25 && w.moisture < 94 && w.animals.length < 18) {
-      const mate=w.animals.find(b=>b!==a && b.type===a.type && b.energy>75 && b.breed<=0 && Math.abs(b.x-a.x)<75);
+      const mate=w.animals.find(b=>b!==a && b.type===a.type && b.energy>75 && b.breed<=0 && groundDistance(b,a)<75);
       if (mate) { const child=addEntity(w,a.type,a.x+8,a.y,rng,true); if (child) { a.energy-=20; mate.energy-=15; a.breed=160; mate.breed=160; w.births++; w.badges.family=true; note(w,`新生命！${a.name}的家族迎來小${child.name}。`); } }
     }
     if (a.energy <= 0) { w.animals.splice(w.animals.indexOf(a),1); note(w,`${a.name}化作了森林的養分。多種一點植物吧。`); w.moisture=clamp(w.moisture+3,0,100); }
