@@ -36,6 +36,8 @@ for (const file of ['app.js', 'engine.js', 'render.js', 'style.css', 'favicon.sv
   assert.ok(asset.body.length > 0, `${file} must not be empty`);
   assert.doesNotMatch(asset.type, /text\/html/i, `${file} must not be an HTML fallback`);
   if (file.endsWith('.js')) assert.match(asset.type, /javascript/i, `${file} must have a JavaScript MIME type`);
+  if (file.endsWith('.css')) assert.match(asset.type, /^text\/css(?:;|$)/i, `${file} must have a CSS MIME type`);
+  if (file.endsWith('.svg')) assert.match(asset.type, /^image\/svg\+xml(?:;|$)/i, `${file} must have an SVG MIME type`);
 }
 console.log(`Verified ${base.href} at ${commit}`);
 console.log('HTTP and asset verification passed; this does not replace browser interaction tests.');

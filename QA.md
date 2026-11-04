@@ -29,3 +29,13 @@ A second agent was started only after the first review completed. Browser access
 8. Cancel a reset and confirm the world remains; optionally confirm a reset on a disposable test forest.
 
 Saving is local to the browser profile and site origin. The world pauses while the page is hidden or closed. Selected weather persists; leaving sunshine running without watering eventually causes drought, especially at 4× speed.
+
+## CI/CD follow-up
+
+The GitHub Actions pipeline runs syntax checks and the test suite on Ubuntu with Node.js 22 and 24. The suite now includes 17 tests: the original 12 plus five checks of the deployment verifier, covering a project subpath, invalid JavaScript/CSS/SVG MIME types, and a missing asset.
+
+Independent workflow review led to two safeguards: a local `pages: read` permission for configuration, and a pre-deployment comparison with the current remote `main` SHA to reject outdated reruns. Only `main` may deploy to the `github-pages` environment, and any failing test blocks packaging and deployment.
+
+The first end-to-end cloud run succeeded: [run 41796772792](https://github.com/awuuu0716/pixel-terrarium/actions/runs/41796772792). The [workflow history](https://github.com/awuuu0716/pixel-terrarium/actions/workflows/ci-cd.yml) records subsequent verification runs. The live release is identified by its `version.json`, which must match the tested commit.
+
+Publication to [GitHub Pages](https://awuuu0716.github.io/pixel-terrarium/) was explicitly approved. The existing private Sites deployment is separate and does not automatically receive GitHub updates. HTTP verification is not a replacement for the browser acceptance checklist above.
