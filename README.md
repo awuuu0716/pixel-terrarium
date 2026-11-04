@@ -2,6 +2,10 @@
 
 A small browser-based pixel ecosystem, now rendered as a fixed-view 2.5D miniature. Plant moss, ferns, and trees; watch rabbits and snails feed and reproduce; change the weather and discover fireflies.
 
+[遊戲規格書](docs/GAME_SPEC.md) — 目前版本的玩法、介面、生態邏輯、數值、2.5D 呈現與存檔規則。
+
+[PM RD UIUX 協作方式](docs/TEAM_WORKFLOW.md) — 由 PM 統一承接產品方向與需求，協調研發、設計及驗收。
+
 ## Run locally
 
 Requires Node.js 20.11 or newer. No packages to install.
