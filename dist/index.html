@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5f4ec">
+  <meta name="description" content="種下一點綠，觀察一個自行生長的像素小世界。你的口袋森林，有雨、有兔子，也有慢慢發生的故事。">
+  <title>瓶中森 · A little living world</title>
+  <link rel="icon" href="favicon.svg"><link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header"><a class="brand" href="./" aria-label="瓶中森首頁"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M12 3h8v6l6 6v11H6V15l6-6z"/><path d="M16 23V12m0 8-5-5m5 2 5-5"/></svg><span>瓶中森<span class="brand-en">LITTLE FOREST</span></span></a><span class="header-note">一點像素，一整個小世界。</span><button class="quiet" id="help">玩法指南 <span>↗</span></button></header>
+  <main>
+    <section class="intro"><div><p class="eyebrow"><span class="tiny-star">✳</span> YOUR POCKET-SIZED ECOSYSTEM</p><h1>把一座森林，<span>放進日常。</span></h1><p class="subtitle">種下、灑水，然後慢一點。讓小生命自己寫故事。</p></div><div class="edition"><span>FIELD NOTES</span><b>No. 001</b><span>一瓶正在發生的生活</span></div></section>
+    <div class="workspace">
+      <section class="world-card" aria-label="生態瓶">
+        <div class="world-top"><span><span class="live-dot"></span><b>我的小森林</b><span class="world-label"> / TERRARIUM</span></span><span class="day"><span id="day">DAY 01</span><span class="divider">/</span><span id="time-label">上午</span></span></div>
+        <div class="scene-wrap"><canvas id="world" width="960" height="640" tabindex="0" aria-label="像素生態瓶。選擇下方物種後點擊瓶內放置；鍵盤方向鍵移動游標，Enter 放置。"></canvas><div class="scene-caption"><span id="weather-caption">☀ 微光正好，適合生長</span><span id="world-status">一切都在慢慢發生</span></div><div class="placement-hint" id="placement-hint">選一個小生命，再點一下瓶子</div><div class="inspector" id="inspector" hidden></div></div>
+        <div class="transport"><div class="transport-left"><button id="pause" class="icon-button" aria-label="暫停模擬" title="暫停模擬">Ⅱ</button><span class="small-label">時間流速</span><div class="segments" id="speed-controls" aria-label="模擬速度"><button data-speed="1" class="active" aria-pressed="true">1×</button><button data-speed="2" aria-pressed="false">2×</button><button data-speed="4" aria-pressed="false">4×</button></div></div><div class="transport-right"><button id="sound" class="quiet" aria-pressed="false">♫ <span>環境音關</span></button><button id="snapshot" class="quiet">↓ <span>拍張照</span></button></div></div>
+        <div class="tool-tray"><div class="tray-heading"><span class="eyebrow">ADD A LITTLE LIFE</span><span id="tool-description">選個小生命，放進森林裡。</span></div><div id="tools" class="tools">
+          <button data-tool="moss" aria-pressed="false"><canvas data-icon="moss" width="40" height="40"></canvas><b>苔蘚</b><small>柔軟的綠毯</small></button>
+          <button data-tool="fern" aria-pressed="false"><canvas data-icon="fern" width="40" height="40"></canvas><b>蕨類</b><small>喜歡濕潤</small></button>
+          <button data-tool="tree" aria-pressed="false"><canvas data-icon="tree" width="40" height="40"></canvas><b>小樹</b><small>慢慢長大</small></button>
+          <button data-tool="rabbit" aria-pressed="false"><canvas data-icon="rabbit" width="40" height="40"></canvas><b>小兔</b><small>蹦蹦跳跳</small></button>
+          <button data-tool="snail" aria-pressed="false"><canvas data-icon="snail" width="40" height="40"></canvas><b>蝸牛</b><small>雨天散步</small></button>
+          <button data-tool="inspect" class="active" aria-pressed="true"><span class="tool-symbol">⌕</span><b>觀察</b><small>認識小居民</small></button>
+        </div></div>
+      </section>
+      <aside class="sidebar">
+        <section class="panel climate"><div class="section-title"><h2>給森林一點天氣</h2><span>01 / CLIMATE</span></div><div class="weather-controls" id="weather-controls"><button data-weather="sunny" class="active" aria-pressed="true"><span>☀</span>晴天</button><button data-weather="rain" aria-pressed="false"><span>☂</span>下雨</button><button data-weather="night" aria-pressed="false"><span>☾</span>夜晚</button></div><div class="range-label"><label for="sunlight">日照強度</label><span id="sun-value">65%</span></div><input id="sunlight" type="range" min="10" max="100" value="65"><div class="range-ends"><span>柔和</span><span>明亮</span></div><p class="climate-note" id="climate-note">暖暖的陽光，讓植物慢慢累積能量。</p></section>
+        <section class="panel"><div class="section-title"><h2>森林的呼吸</h2><span>02 / PULSE</span></div><div class="stats"><div><span class="stat-icon leaf">♧</span><b id="plant-count">0</b><small>株植物</small></div><div><span class="stat-icon">♙</span><b id="animal-count">0</b><small>位小居民</small></div></div><div class="meter-label"><span>土壤濕度</span><b id="moisture-value">68%</b></div><div class="meter"><i id="moisture-bar"></i></div><div class="meter-label"><span>生態活力 <button class="info" id="balance-help" aria-label="生態活力說明">ⓘ</button></span><b id="health-value">蓬勃生長</b></div><div class="meter health"><i id="health-bar"></i></div><p class="pulse-note" id="pulse-note">有植物，也有小居民。真好。</p></section>
+        <section class="panel journal-panel"><div class="section-title"><h2>瓶中日記</h2><span>03 / JOURNAL</span></div><ol id="journal" class="journal" aria-label="最近的生態事件"></ol><div class="journal-foot"><span class="tiny-star">✳</span><span>小小的變化，也值得被記住。</span></div></section>
+      </aside>
+    </div>
+    <section class="discovery"><div><span class="eyebrow">LITTLE DISCOVERIES</span><h2>不急著完成，偶爾有驚喜。</h2></div><div class="milestones"><div id="badge-garden"><span>❀</span><div><b>一片小森林</b><small>種下 12 株植物</small></div></div><div id="badge-family"><span>♡</span><div><b>新生命報到</b><small>見證一次自然繁殖</small></div></div><div id="badge-night"><span>✧</span><div><b>夜裡有微光</b><small>在夜晚遇見螢火蟲</small></div></div></div></section>
+  </main>
+  <footer><span><span class="tiny-star">✳</span> 瓶中森 <span class="footer-en">MADE FOR SLOW MOMENTS.</span></span><div><span id="save-status">進度自動保存在這台裝置</span><button id="reset" class="quiet">重新種一瓶 ↺</button></div></footer>
+  <div id="toast" role="status" class="toast" hidden></div>
+  <dialog id="help-dialog"><button class="dialog-close" data-close aria-label="關閉">×</button><p class="eyebrow">A SMALL GUIDE TO YOUR FOREST</p><h2>留一點空間，給生命。</h2><p>這是一座慢慢生長的迷你生態系，沒有輸贏。你可以照顧它，也可以只是看著。</p><ul><li><b>種下植物：</b>選苔蘚、蕨類或小樹，再點瓶內放置。植物需要水與陽光，也會自然散播。</li><li><b>放入居民：</b>小兔與蝸牛會自己找植物吃。食物充足、附近有同類時，就有機會生下小寶寶。</li><li><b>調整天氣：</b>晴天幫助生長，下雨補充土壤水分。切到夜晚，看看螢火蟲；選定的天氣會持續，直到你再切換。</li><li><b>細看生命：</b>用「觀察」點居民或植物，看看它的名字、能量與年齡。方向鍵移動游標，Enter 也能操作。</li><li><b>慢一點或快一點：</b>一天是 2 分鐘，可暫停或加速。關閉頁面後世界也會休息。</li></ul><p class="dialog-note">日記與進度只存在目前瀏覽器。最多容納 65 株植物與 18 位居民。這是療癒的小模擬，並非真實生態模型。</p><button class="primary" data-close>回到我的森林 →</button></dialog>
+  <dialog id="reset-dialog"><p class="eyebrow">A FRESH LITTLE START</p><h2>重新種一瓶？</h2><p>目前的森林與日記將被新森林取代。可以先拍張照，留住這個小世界。</p><div class="dialog-actions"><button class="quiet" data-close>留下這一瓶</button><button class="primary" id="confirm-reset">開始新森林</button></div></dialog>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
