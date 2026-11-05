@@ -31,7 +31,7 @@ for (let attempt = 1; ; attempt++) {
 const page = await fetchText('');
 assert.match(page.type, /text\/html/i);
 assert.match(page.body, /id="world"/, 'The game canvas must be present');
-for (const file of ['app.js', 'engine.js', 'render.js', 'scene.js', 'sprites.js', 'style.css', 'favicon.svg']) {
+for (const file of ['app.js', 'engine.js', 'render.js', 'scene.js', 'sprites.js', 'progression.js', 'progression-ui.js', 'decorations.js', 'style.css', 'favicon.svg']) {
   const asset = await fetchText(file);
   assert.ok(asset.body.length > 0, `${file} must not be empty`);
   assert.doesNotMatch(asset.type, /text\/html/i, `${file} must not be an HTML fallback`);

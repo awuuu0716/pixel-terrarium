@@ -10,6 +10,9 @@ test('preview server returns honest status codes and serves the playable entry p
     assert.equal(page.status, 200);
     assert.match(page.headers.get('content-type'), /text\/html/);
     assert.match(await page.text(), /id="world"/);
+    for(const file of ['progression.js','progression-ui.js','decorations.js']){
+      const asset=await fetch(`${origin}/${file}`);assert.equal(asset.status,200);assert.match(asset.headers.get('content-type'),/javascript/);assert.ok((await asset.text()).length>0);
+    }
     const missing = await fetch(origin + '/definitely-missing.js');
     assert.equal(missing.status, 404);
     assert.equal(await missing.text(), 'Not found');

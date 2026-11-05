@@ -2,6 +2,8 @@ import { createWorld, addEntity, step, note, vitality, restoreWorld, TYPES, clam
 import { render, renderIcon } from './render.js';
 import { project, groundPoint, pickEntity, moveGroundCursor } from './scene.js';
 import { prepareSprites } from './sprites.js';
+import { DECORATIONS, placeDecoration } from './progression.js';
+import { createProgressionUI } from './progression-ui.js';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const KEY='little-forest-v1';
 let world,storageAvailable=true;
@@ -18,7 +20,19 @@ motionPreference.addEventListener('change',e=>{reducedMotion=e.matches;if(reduce
 function toast(text){$('#toast').textContent=text;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,3500);}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(world));storageAvailable=true;$('#save-status').textContent='已自動保存 · 只存在這台裝置';}catch{storageAvailable=false;$('#save-status').textContent='瀏覽器無法存檔 · 請保持頁面開啟';}}
 const descriptions={moss:'苔蘚是小居民的點心，點綠色地面種下。',fern:'蕨類喜歡水分，記得偶爾下場雨。',tree:'小樹會慢慢長大，也會自然散播種子。',rabbit:'小兔需要植物作為食物；同伴能讓家族成長。',snail:'蝸牛走得慢，下雨時會更有活力。',inspect:'點一下植物或居民，看看它的小故事。'};
-function selectTool(next){tool=next;$$('[data-tool]').forEach(b=>{b.classList.toggle('active',b.dataset.tool===tool);b.setAttribute('aria-pressed',String(b.dataset.tool===tool));});$('#tool-description').textContent=descriptions[tool];$('#placement-hint').textContent=tool==='inspect'?'點一下小居民，認識牠的日常':`已選${TYPES[tool].name} · 點綠色地面放入`;canvas.style.cursor=tool==='inspect'?'help':'crosshair';}
+function selectTool(next){
+  tool=next;const decoration=DECORATIONS[tool];
+  $$('[data-tool]').forEach(b=>{b.classList.toggle('active',b.dataset.tool===tool);b.setAttribute('aria-pressed',String(b.dataset.tool===tool));});
+  $('#tool-description').textContent=decoration?'點綠色地面擺放裝飾。':descriptions[tool];
+  $('#placement-hint').textContent=tool==='inspect'?'點一下小居民，認識牠的日常':`已選${decoration?.name||TYPES[tool].name} · 點綠色地面放入`;
+  $('#decoration-placement').hidden=!decoration;
+  $('#decoration-instruction').textContent=decoration?`正在擺放${decoration.name}。點地面確認；方向鍵移動，Enter 擺放，Esc 取消。`:'';
+  canvas.style.cursor=tool==='inspect'?'help':'crosshair';
+}
+function focusForest(){canvas.focus();canvas.scrollIntoView({block:'center',behavior:'auto'});}
+const progressionUI=createProgressionUI({getWorld:()=>world,save,toast,selectTool,focusForest,setWeather,isPaused:()=>paused,getSpeed:()=>speed});
+$('#cancel-decoration').onclick=()=>{selectTool('inspect');focusForest();toast('已取消擺放，裝飾仍在原處或收藏裡。');};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&Object.hasOwn(DECORATIONS,tool)){e.preventDefault();selectTool('inspect');focusForest();toast('已取消擺放，裝飾仍在原處或收藏裡。');}});
 $$('[data-tool]').forEach(b=>b.addEventListener('click',()=>selectTool(b.dataset.tool)));
 $$('[data-speed]').forEach(b=>b.addEventListener('click',()=>{speed=Number(b.dataset.speed);$$('[data-speed]').forEach(el=>{el.classList.toggle('active',el===b);el.setAttribute('aria-pressed',String(el===b));});toast(`時間以 ${speed} 倍速流動`);}));
 function setWeather(weather){world.weather=weather;note(world,{sunny:'陽光回來了。葉子開始收集暖意。',rain:'下了一場小雨，土壤慢慢喝飽水。',night:'把燈調暗，聽聽森林的夜晚。'}[weather]);updateUI();save();}
@@ -37,6 +51,11 @@ function interact(p){
   }else{
     const ground=groundPoint(p,view);
     if(!ground){toast('請點瓶內的綠色地面，選擇前後位置。');return;}
+    if(Object.hasOwn(DECORATIONS,tool)){
+      const name=DECORATIONS[tool].name;
+      if(placeDecoration(world,tool,ground.x,ground.y)){note(world,`你在森林擺好了${name}。`);selectTool('inspect');updateUI();save();toast(`${name}擺好了。可以到「佈置森林」免費重擺或收回。`);}
+      return;
+    }
     const entity=addEntity(world,tool,ground.x,ground.y);
     if(!entity){toast(TYPES[tool].plant?'植物已達 65 株，留一點呼吸的空間。':'居民已達 18 位，這一瓶已經很熱鬧了。');return;}
     note(world,TYPES[tool].plant?`你種下了一株${TYPES[tool].name}。`:`小${TYPES[tool].name==='小兔'?'兔':TYPES[tool].name}「${entity.name}」加入森林。`);
@@ -65,6 +84,7 @@ function updateUI(){
   for(const key of ['garden','family','night'])$('#badge-'+key).classList.toggle('unlocked',world.badges[key]);
   const eventKey=JSON.stringify(world.events.slice(0,3));if(lastEvents!==eventKey){lastEvents=eventKey;$('#journal').replaceChildren(...world.events.slice(0,3).map(e=>{const li=document.createElement('li'),time=document.createElement('time'),text=document.createElement('span');time.textContent=`DAY ${String(Math.floor(e.time/120)+1).padStart(2,'0')} · ${String(Math.floor(e.time%120/2)).padStart(2,'0')} MIN`;text.textContent=e.text;li.append(time,text);return li;}));}
   updateInspector();
+  progressionUI.update();
 }
 $('#snapshot').addEventListener('click',()=>{try{const photo=document.createElement('canvas');photo.width=960;photo.height=700;const p=photo.getContext('2d');p.save();p.beginPath();p.rect(0,0,960,640);p.clip();render(p,world,visualTime,{height:640,view,weather:visualWeather});p.restore();p.fillStyle='#f6f5ee';p.fillRect(0,640,960,60);p.fillStyle='#52765b';p.font='20px sans-serif';p.fillText(`瓶中森 · 第 ${Math.floor(world.time/120)+1} 天`,36,678);p.font='12px monospace';p.textAlign='right';p.fillText('A LITTLE LIVING WORLD',924,677);photo.toBlob(blob=>{if(!blob){toast('照片暫時無法輸出，請再試一次。');return;}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`little-forest-day-${Math.floor(world.time/120)+1}.png`;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);toast('把這一刻收進相簿裡了。');},'image/png');}catch{toast('瀏覽器無法輸出照片，請再試一次。');}});
 $('#help').onclick=()=>$('#help-dialog').showModal();$('#balance-help').onclick=()=>toast('生態活力綜合了土壤濕度、植物健康與居民能量。');$('#reset').onclick=()=>$('#reset-dialog').showModal();

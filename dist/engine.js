@@ -1,3 +1,4 @@
+import { restoreProgression, advanceProgression, recordFeeding, recordDiscoveries } from './progression.js';
 import { groundDistance, DEPTH_UNIT } from './scene.js';
 export const TYPES = {
   moss: { name: '苔蘚', plant: true, growth: .0028, food: .9 },
@@ -19,14 +20,14 @@ export function addEntity(w, type, x, y, rng = Math.random, baby = false) {
   else Object.assign(entity, { energy: baby ? 65 : 85, dir: rng() > .5 ? 1 : -1, targetX: x, targetY: y, wander: 0, breed: baby ? 150 : 50 + rng() * 40, name: NAMES[type][Math.floor(rng() * NAMES[type].length)], state: '散步中' });
   group.push(entity);
   if (w.plants.length >= 12 && !w.badges.garden) { w.badges.garden = true; note(w, '小小里程碑：這裡已經是一片小森林了。'); }
-  return entity;
+  recordDiscoveries(w); return entity;
 }
 export function createWorld(rng = Math.random) {
   const w = { version: 1, time: 0, moisture: 68, sunlight: 65, weather: 'sunny', plants: [], animals: [], events: [], nextId: 1, badges: { garden: false, family: false, night: false }, births: 0, seedClock: 0 };
   for (const [type, x, y, size] of [['tree',116,218,.92],['tree',324,213,.75],['fern',166,227,.85],['fern',363,228,.8],['fern',265,215,.7],['moss',86,230,.85],['moss',198,232,.9],['moss',288,233,.7],['moss',387,219,.75]]) { const p = addEntity(w,type,x,y,rng); p.size=size; }
   addEntity(w,'rabbit',229,229,rng); addEntity(w,'rabbit',309,229,rng); addEntity(w,'snail',140,235,rng);
   note(w,'麻糬、米粒和慢慢，搬進了新家。'); w.animals.forEach((a,i)=>a.name=['麻糬','米粒','慢慢'][i]);
-  note(w,'第 1 天。一座小森林，從這裡開始。'); return w;
+  note(w,'第 1 天。一座小森林，從這裡開始。'); restoreProgression(w); return w;
 }
 export function vitality(w) {
   if (!w.plants.length && !w.animals.length) return 0;
@@ -68,7 +69,7 @@ export function step(w, dt, rng = Math.random) {
       a.targetX = food.x; a.targetY = food.y;
       if (groundDistance(a,food)<8) {
         const portion = Math.min(Math.max(0,food.size-.12),dt*.005);
-        food.size -= portion; a.energy = clamp(a.energy+portion*520*TYPES[food.type].food,0,100); a.state='吃點心中';
+        recordFeeding(w,portion); food.size -= portion; a.energy = clamp(a.energy+portion*520*TYPES[food.type].food,0,100); a.state='吃點心中';
       } else a.state='尋找點心';
     } else if (a.wander <= 0) { a.targetX=66+rng()*348; a.targetY=207+rng()*29; a.wander=5+rng()*14; a.state=night?'月下散步':'散步中'; }
     const dx=a.targetX-a.x, dy=(a.targetY-a.y)*DEPTH_UNIT, d=Math.hypot(dx,dy);
@@ -81,6 +82,7 @@ export function step(w, dt, rng = Math.random) {
     if (a.energy <= 0) { w.animals.splice(w.animals.indexOf(a),1); note(w,`${a.name}化作了森林的養分。多種一點植物吧。`); w.moisture=clamp(w.moisture+3,0,100); }
   }
   if (night && w.plants.length>=5 && !w.badges.night) { w.badges.night=true; note(w,'夜裡亮起一點微光。原來是螢火蟲！'); }
+  advanceProgression(w,dt);
 }
 export function restoreWorld(raw) {
   try {
@@ -97,6 +99,6 @@ export function restoreWorld(raw) {
     }
     w.events=w.events.filter(e=>e&&Number.isFinite(e.time)&&typeof e.text==='string'&&e.text.length<180).slice(0,20);
     w.badges={garden:w.badges.garden===true,family:w.badges.family===true,night:w.badges.night===true};
-    return w;
+    restoreProgression(w); return w;
   } catch { return null; }
 }

@@ -1,3 +1,5 @@
+import { decorationEntities, DECORATIONS } from './progression.js';
+import { renderDecoration } from './decorations.js';
 import { TYPES } from './engine.js';
 import { project, groundPoint, depthOrder, entityBounds } from './scene.js';
 import { drawPlant, drawAnimal } from './sprites.js';
@@ -86,9 +88,10 @@ export function render(c,w,t,options={}) {
   pond(c,t,view,night);c.restore();
   path(c,groundPolygon([[62,237],[418,237],[418,239],[62,239]],view),moss);
   for(let i=0;i<40;i++){const p=project({x:76+i*8.4,y:236+hash(i)*.8},view);rect(c,i%3?moss:grass,p.x,p.y-2,2,3+hash(i+3)*4);}
-  const preview=options.cursor&&options.tool!=='inspect'?groundPoint(options.cursor,view):null;
-  const ghost=preview?{...preview,id:Number.MAX_SAFE_INTEGER,type:options.tool,size:.55,health:100,seed:12,dir:1,age:40,state:'發呆中',ghost:true}:null;
-  for(const e of depthOrder([...w.plants,...w.animals,...ROCKS,...(ghost?[ghost]:[])])){
+  const preview=options.cursor&&options.tool&&options.tool!=='inspect'?groundPoint(options.cursor,view):null;
+  const ghost=preview?{...preview,id:Number.MAX_SAFE_INTEGER,type:options.tool,size:.55,health:100,seed:12,dir:1,age:40,state:'發呆中',ghost:true,decoration:Object.hasOwn(DECORATIONS,options.tool)}:null;
+  for(const e of depthOrder([...w.plants,...w.animals,...decorationEntities(w),...ROCKS,...(ghost?[ghost]:[])])){
+    if(e.decoration){c.save();if(e.ghost)c.globalAlpha=.48;renderDecoration(c,e,view,e.ghost);c.restore();continue;}
     if(e.type==='rock'){rock(c,e,view);continue;}
     if(e.ghost){c.save();c.globalAlpha=.48;entity(c,e,t,view,true);c.restore();}else entity(c,e,t,view,options.selected===e.id);
   }

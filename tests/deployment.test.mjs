@@ -16,6 +16,9 @@ function verify(overrides = {}) {
       'render.js': ['export {};', 'text/javascript'],
       'scene.js': ['export {};', 'text/javascript'],
       'sprites.js': ['export {};', 'text/javascript'],
+      'progression.js': ['export {};', 'text/javascript'],
+      'progression-ui.js': ['export {};', 'text/javascript'],
+      'decorations.js': ['export {};', 'text/javascript'],
       'style.css': ['body {}', 'text/css; charset=utf-8'],
       'favicon.svg': ['<svg/>', 'image/svg+xml']
     };
@@ -39,7 +42,7 @@ test('release verification accepts a complete deployment under a project subpath
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /Verified https:\/\/example.test\/pixel-terrarium\//);
 });
-for (const [file, type] of [['style.css', 'text/plain'], ['favicon.svg', 'text/plain'], ['app.js', 'text/html'], ['scene.js', 'text/html'], ['sprites.js', 'text/plain']]) {
+for (const [file, type] of [['style.css', 'text/plain'], ['favicon.svg', 'text/plain'], ['app.js', 'text/html'], ['scene.js', 'text/html'], ['sprites.js', 'text/plain'], ['progression.js','text/html'], ['progression-ui.js','text/plain'], ['decorations.js','text/plain']]) {
   test(`release verification rejects an unusable MIME type for ${file}`, () => {
     const result = verify({ [file]: type });
     assert.notEqual(result.status, 0);
